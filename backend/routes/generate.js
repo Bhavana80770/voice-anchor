@@ -84,6 +84,19 @@ const messages = {
   }
 }
 
+const storyTemplates = {
+  english: (name, fav) => `Once upon a time, there was a brave child named ${name}. ${name} had a very special friend, a ${fav}. One day, ${name} and ${fav} went on a grand adventure to the Land of Calm. They learned that even when things change, like bedtime or leaving the house, they are always safe and loved. The end.`,
+  hindi: (name, fav) => `एक समय की बात है, ${name} नाम का एक बहादुर बच्चा था। ${name} का एक बहुत ही खास दोस्त था, एक ${fav}। एक दिन, ${name} और ${fav} शांति की भूमि की एक बड़ी साहসিক यात्रा पर गए। उन्होंने सीखा कि जब चीज़ें बदलती हैं, जैसे सोने का समय या घर से बाहर जाना, तब भी वे हमेशा सुरक्षित और प्यार भरे होते हैं। समाप्त।`,
+  telugu: (name, fav) => `అనగనగా ఒకానొక కాలంలో, ${name} అనే ధైర్యవంతుడైన బిడ్డ ఉండేవాడు. ${name} కి ఒక ప్రత్యేక స్నేహితుడు ఉన్నాడు, అది ఒక ${fav}. ఒకరోజు, ${name} మరియు ${fav} ప్రశాంతత రాజ్యానికి ఒక గొప్ప साహసయాత్రకు వెళ్లారు. పడుకునే సమయం లేదా ఇంటి నుండి బయలుదేరడం వంటి మార్పులు జరిగినప్పుడు కూడా, వారు ఎల్లప్పుడూ సురక్షితంగా మరియు ప్రేమించబడతారని వారు తెలుంగున్నారు. సమాప్తం.`,
+  tamil: (name, fav) => `முன்னொரு காலத்தில், ${name} என்ற ஒரு தைரியமான குழந்தை இருந்தது. ${name}-க்கு ஒரு மிகச் சிறந்த நண்பன் இருந்தான், அது ஒரு ${fav}. ஒரு நாள், ${name} மற்றும் ${fav} அமைதி நிலத்திற்கு ஒரு பெரிய சாகசப் பயணத்தை மேற்கொண்டனர். தூங்கும் நேரம் அல்லது வீட்டை விட்டு வெளியேறுவது போன்ற மாற்றங்கள் ஏற்படும் போதும், அவர்கள் எப்போதும் பாதுகாப்பாகவும் அன்பாகவும் இருப்பார்கள் என்பதை அவர்கள் கற்றுக்கொண்டனர். முற்றிற்று.`,
+  kannada: (name, fav) => `ಒಂದಾನೊಂದು ಕಾಲದಲ್ಲಿ, ${name} ಎಂಬ ಧೈರ್ಯಶಾಲಿ ಮಗು ಇತ್ತು. ${name} ನಿಗೆ ಒಬ್ಬ ವಿಶೇಷ ಸ್ನೇಹಿತನಿದ್ದನು, ಅದು ಒಂದು ${fav}. ಒಂದು ದಿನ, ${name} ಮತ್ತು ${fav} ಶಾಂತಿಯ ನಾಡಿಗೆ ಒಂದು ದೊಡ್ಡ ಸಾಹಸಯಾತ್ರೆಕ್ಕೆ ಹೋದರು. ಮಲಗುವ ಸಮಯ ಅಥವಾ ಮನೆಯಿಂದ ಹೊರಡುವುದು ಮುಂತಾದ ಬದಲಾವಣೆಗಳು ಉಂಟಾದಾಗಲೂ, ಅವರು ಯಾವಾಗಲೂ ಸುರಕ್ಷಿತವಾಗಿ ಮತ್ತು ಪ್ರೀತಿಯಿಂದ ಇರುತ್ತಾರೆ ಎಂದು ಅವರು ಕಲಿತರು. ಮುಕ್ತಾಯ.`,
+  malayalam: (name, fav) => `ഒരിക്കൽ, ${name} എന്ന് പേരുള്ള ധീരനായ ഒരു കുട്ടിയുണ്ടായിരുന്നു. ${name}-ന് വളരെ സവിശേഷനായ ഒരു സുഹൃത്തുണ്ടായിരുന്നു, ഒരു ${fav}. ഒരു ദിവസം, ${name}-ഉം ${fav}-ഉം ശാന്തിയുടെ നാട്ടിലേക്ക് ഒരു വലിയ സാഹസിക യാത്ര പോയി. ഉറങ്ങുന്ന സമയമോ വീട് വിട്ടുപോകുന്നതോ പോലുള്ള മാറ്റങ്ങൾ സംഭവിക്കുമ്പോഴും തങ്ങൾ എപ്പോഴും സുരക്ഷിതരും സ്നേഹിക്കപ്പെടുന്നവരുമാണെന്ന് അവർ മനസ്സിലാക്കി. സമാപ്തം.`,
+  marathi: (name, fav) => `एका काळी, ${name} नावाचा एक शूर मुलगा होता. ${name} चा एक खूप खास मित्र होता, एक ${fav}. एके दिवशी, ${name} आणि ${fav} शांततेच्या भूमीच्या एका मोठ्या साहसी मोहिमेवर गेले. त्यांनी शिकले की जेव्हा गोष्टी बदलतात, जसे की झोपण्याची वेळ किंवा घरातून बाहेर जाणे, तेव्हाही ते नेहमी सुरक्षित आणि प्रेमळ असतात. समाप्त।`,
+  gujarati: (name, fav) => `એક સમયે, ${name} નામનો એક બહાદુર બાળક હતો. ${name} ને એક ખૂબ જ ખાસ મિત્ર હતો, એક ${fav}. એક દિવસ, ${name} અને ${fav} શાંતિની ભૂમિની એક મોટી સાહસિક યાત્રા પર ગયા. તેઓએ શીખ્યું કે જ્યારે વસ્તુઓ બદલાય છે, જેમ કે સૂવાનો સમય અથવા ઘરની બહાર જવું, ત્યારે પણ તેઓ હંમેશા સુરક્ષિત અને પ્રેમભર્યા હોય છે. સમાપ્ત.`,
+  bengali: (name, fav) => `একদা এক সময়ে, ${name} নামে এক সাহসী শিশু ছিল। ${name}-এর এক খুব বিশেষ বন্ধু ছিল, একটি ${fav}। একদিন, ${name} এবং ${fav} শান্তির দেশে এক বড় অভিযানে গেল। তারা শিখল যে যখন জিনিসগুলো বদলে যায়, যেমন ঘুমানোর সময় বা বাড়ি থেকে বের হওয়া, তখনও তারা সবসময় নিরাপদ এবং ভালোবাসায় ঘেরা থাকে। সমাপ্ত।`,
+  punjabi: (name, fav) => `ਇੱਕ ਸਮੇਂ ਦੀ ਗੱਲ ਹੈ, ${name} ਨਾਂ ਦਾ ਇੱਕ ਬਹਾਦਰ ਬੱਚਾ ਸੀ। ${name} ਦਾ ਇੱਕ ਬਹੁਤ ਹੀ ਖਾਸ ਦੋਸਤ ਸੀ, ਇੱਕ ${fav}। ਇੱਕ ਦਿਨ, ${name} ਅਤੇ ${fav} ਸ਼ਾਂਤੀ ਦੀ ਧਰਤੀ ਦੀ ਇੱਕ ਵੱਡੀ ਸਾਹਸੀ ਯਾਤਰਾ ਤੇ ਗਏ। ਉਨ੍ਹਾਂ ਨੇ ਸਿੱਖਿਆ ਕਿ ਜਦੋਂ ਚੀਜ਼ਾਂ ਬਦਲਦੀਆਂ ਹਨ, ਜਿਵੇਂ ਕਿ ਸੌਣ ਦਾ ਸਮਾਂ ਜਾਂ ਘਰ ਤੋਂ ਬਾਹਰ ਜਾਣਾ, ਉਦੋਂ ਵੀ ਉਹ ਹਮੇਸ਼ਾ ਸੁਰੱਖਿਅਤ ਅਤੇ ਪਿਆਰ ਭਰੇ ਹੁੰਦੇ ਹਨ। ਸਮਾਪਤ।`
+}
+
 const emotionMessages = {
   english: { Happy: 'You are doing great!', Sad: 'It is okay to feel sad. I am here with you.', Angry: 'Take a deep breath. Everything will be okay.', Scared: 'You are safe. I am right here with you.', Tired: 'You can rest soon. Just one more thing.', Neutral: '' },
   hindi: { Happy: 'तुम बहुत अच्छा कर रहे हो!', Sad: 'उदास होना ठीक है। मैं तुम्हारे साथ हूँ।', Angry: 'गहरी साँस लो। सब ठीक हो जाएगा।', Scared: 'तुम सुरक्षित हो। मैं यहाँ हूँ।', Tired: 'तुम जल्दी आराम कर सकते हो।', Neutral: '' },
@@ -97,13 +110,92 @@ const emotionMessages = {
   punjabi: { Happy: 'ਤੂੰ ਬਹੁਤ ਵਧੀਆ ਕਰ ਰਿਹਾ ਹੈਂ!', Sad: 'ਉਦਾਸ ਹੋਣਾ ਠੀਕ ਹੈ। ਮੈਂ ਤੇਰੇ ਨਾਲ ਹਾਂ।', Angry: 'ਡੂੰਘਾ ਸਾਹ ਲੈ। ਸਭ ਠੀਕ ਹੋ ਜਾਵੇਗਾ।', Scared: 'ਤੂੰ ਸੁਰੱਖਿਅਤ ਹੈਂ।', Tired: 'ਤੂੰ ਜਲਦੀ ਆਰਾਮ ਕਰ ਸਕਦਾ ਹੈਂ।', Neutral: '' }
 }
 
+const axios = require('axios');
+
 router.post('/', async (req, res) => {
-  const { childName, favoriteThing, transition, language = 'english', emotionContext = '' } = req.body
+  const { childName, favoriteThing, transition, language = 'english', emotionContext = '', isStory = false, isSocialStory = false, age, situation } = req.body
+
+  if (isStory && isSocialStory) {
+    try {
+      const prompt = `Write a short, therapeutic 4-step "Social Story" in ${language} for a ${age} year old child named ${childName} who is preparing for the situation: "${situation || "a new experience"}". 
+      
+      Requirements:
+      1. Each step MUST be exactly 1-2 sentences.
+      2. Use a very calming, reassuring, and supportive tone.
+      3. Use the child's perspective (e.g., "I can do it").
+      4. Format as a clean numbered list (1..4).
+      5. Do NOT add any intro or extro text. Just the 4 steps.`
+
+      const response = await axios.post('https://api.anthropic.com/v1/messages', {
+        model: "claude-3-haiku-20240307",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: prompt }]
+      }, {
+        headers: {
+          'x-api-key': process.env.CLAUDE_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        }
+      });
+
+      const script = response.data.content[0].text;
+      return res.json({ script });
+    } catch (err) {
+      console.error('AI Generation Error:', err.response?.data || err.message);
+      return res.status(500).json({ error: 'AI story generation failed' });
+    }
+  }
+
+  // AI BUDDY CHAT
+  if (req.body.isBuddy) {
+    const { userMessage, history = [] } = req.body;
+    try {
+      const systemPrompt = `You are "Anchor Buddy", a world-class therapeutic AI companion for a ${age} year old child named ${childName} who has Autism. 
+      Your purpose is to provide emotional regulation support, social skills training, and predictable, calming companionship.
+      
+      THERAPEUTIC GUIDELINES:
+      - Use "Social Thinking" concepts: explain things in terms of "Expected" and "Unexpected" behaviors if appropriate.
+      - Praise frequently: Use phrases like "I love how you are sharing your feelings!" or "You are doing amazing."
+      - Direct & Simple: Avoid metaphors, sarcasm, or ambiguous language.
+      - Favorite Thing: Their special interest is ${favoriteThing}. Use this to build rapport and motivation (e.g., "Just like ${favoriteThing}, you are so strong!").
+      - Sensory Awareness: If the child seems overwhelmed, suggest a "Sensory Break" or "Deep Pressure" (like a hug).
+      - Language: ONLY respond in ${language}.
+      
+      CONVERSATION STYLE:
+      - Short, manageable sentences (max 3).
+      - Always end with a gentle question or encouragement.
+      - Model "First/Then" language for routines if they ask what to do.`;
+
+      const response = await axios.post('https://api.anthropic.com/v1/messages', {
+        model: "claude-3-haiku-20240307",
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [...history, { role: "user", content: userMessage }]
+      }, {
+        headers: {
+          'x-api-key': process.env.CLAUDE_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        }
+      });
+
+      const reply = response.data.content[0].text;
+      return res.json({ reply });
+    } catch (err) {
+      console.error('AI Buddy Error:', err.response?.data || err.message);
+      return res.status(500).json({ error: 'Buddy is taking a sensory break. Try again soon!' });
+    }
+  }
+
+  if (isStory) {
+    const storyFn = storyTemplates[language] || storyTemplates['english']
+    const script = storyFn(childName, favoriteThing)
+    return res.json({ script })
+  }
 
   const langMessages = messages[language] || messages['english']
   const langEmotions = emotionMessages[language] || emotionMessages['english']
-
-  // Get emotion label from emotionContext
+  
   const emotionLabel = emotionContext.includes('Happy') ? 'Happy'
     : emotionContext.includes('Sad') ? 'Sad'
     : emotionContext.includes('Angry') ? 'Angry'
@@ -112,7 +204,6 @@ router.post('/', async (req, res) => {
     : 'Neutral'
 
   const emotionSuffix = langEmotions[emotionLabel] || ''
-
   const msgFn = langMessages[transition] || langMessages['calm down, everything is okay']
   const script = msgFn(childName, favoriteThing, emotionSuffix)
 

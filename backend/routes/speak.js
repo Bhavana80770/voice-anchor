@@ -3,14 +3,14 @@ const axios = require('axios');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-  const { text } = req.body;
+  const { text, voiceId = 'en-US-natalie', style = 'Calm' } = req.body;
 
   try {
     const response = await axios.post(
       'https://api.murf.ai/v1/speech/generate',
       {
-        voiceId: 'en-US-natalie',
-        style: 'Calm',
+        voiceId: voiceId,
+        style: style,
         rate: -10,
         pitch: 0,
         text: text,

@@ -53,7 +53,9 @@ export default function Setup({ onSave, caregiverName }) {
     childName: '',
     age: '',
     favoriteThing: '',
-    photo: null
+    photo: null,
+    voiceId: 'en-US-natalie',
+    voiceStyle: 'Calm'
   })
   const [preview, setPreview] = useState(null)
 
@@ -187,6 +189,18 @@ export default function Setup({ onSave, caregiverName }) {
           onFocus={e => e.target.style.borderColor = '#63b3ed'}
           onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
         />
+
+        <label style={labelStyle}>Voice Persona</label>
+        <select
+          value={form.voiceId}
+          onChange={e => setForm({ ...form, voiceId: e.target.value })}
+          style={{...inputStyle, appearance: 'none', cursor: 'pointer'}}
+        >
+          <option value="en-US-natalie">Natalie (Gentle Female - US)</option>
+          <option value="en-US-marcus">Marcus (Soft Male - US)</option>
+          <option value="en-UK-serena">Serena (Soothing Female - UK)</option>
+          <option value="en-IN-neerja">Neerja (Calm Female - India)</option>
+        </select>
 
         <button
           onClick={handleSave}

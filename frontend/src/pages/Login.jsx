@@ -26,7 +26,7 @@ const Bubbles = () => (
   </div>
 )
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, onGoToTherapist }) {
   const [isSignup, setIsSignup] = useState(
     !localStorage.getItem('caregiverPassword')
   )
@@ -217,6 +217,20 @@ export default function Login({ onLogin }) {
             </button>
           </div>
         )}
+
+        <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', textAlign: 'center' }}>
+          <button
+            onClick={onGoToTherapist}
+            style={{
+              background: 'none', border: 'none',
+              color: '#9f7aea', fontSize: 13,
+              cursor: 'pointer', fontWeight: 600,
+              textDecoration: 'underline'
+            }}
+          >
+            Are you a Therapist? Login here 👨‍⚕️
+          </button>
+        </div>
 
       </div>
 

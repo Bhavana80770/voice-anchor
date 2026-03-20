@@ -8,6 +8,7 @@ export default function Routines({ onBack, onSelectRoutine }) {
   )
   const [newLabel, setNewLabel] = useState('')
   const [newEmoji, setNewEmoji] = useState('🧸')
+  const [scheduledTime, setScheduledTime] = useState('')
   const [showAdd, setShowAdd] = useState(false)
 
   const addRoutine = () => {
@@ -15,11 +16,12 @@ export default function Routines({ onBack, onSelectRoutine }) {
       alert('Please enter a routine name!')
       return
     }
-    const updated = [...routines, { label: newLabel, emoji: newEmoji }]
+    const updated = [...routines, { label: newLabel, emoji: newEmoji, time: scheduledTime }]
     setRoutines(updated)
     localStorage.setItem('customRoutines', JSON.stringify(updated))
     setNewLabel('')
     setNewEmoji('🧸')
+    setScheduledTime('')
     setShowAdd(false)
   }
 
@@ -106,6 +108,27 @@ export default function Routines({ onBack, onSelectRoutine }) {
               color: 'rgba(255,255,255,0.6)',
               fontSize: 12, marginBottom: 8, letterSpacing: 1
             }}>
+              SCHEDULE REMINDER (OPTIONAL)
+            </p>
+            <input
+              type="time"
+              value={scheduledTime}
+              onChange={e => setScheduledTime(e.target.value)}
+              style={{
+                display: 'block', width: '100%',
+                padding: '12px 16px', marginBottom: 16,
+                borderRadius: 12,
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.07)',
+                color: 'white', fontSize: 15,
+                outline: 'none', boxSizing: 'border-box'
+              }}
+            />
+
+            <p style={{
+              color: 'rgba(255,255,255,0.6)',
+              fontSize: 12, marginBottom: 8, letterSpacing: 1
+            }}>
               PICK AN EMOJI
             </p>
             <div style={{
@@ -165,6 +188,7 @@ export default function Routines({ onBack, onSelectRoutine }) {
                 <span style={{ color: 'white', fontWeight: 600, fontSize: 15 }}>
                   {r.label}
                 </span>
+                {r.time && <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: 4, marginLeft: 8 }}>⏰ {r.time}</span>}
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button

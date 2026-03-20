@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { getSmartSuggestions } from '../utils/aiLearning'
+import VoiceDetector from '../components/VoiceDetector'
+import TherapistNotes from '../components/TherapistNotes'
 
 const DEFAULT_ROUTINES = [
   { label: 'Stop Playtime', emoji: '🧸' },
@@ -103,12 +106,18 @@ const generateParticles = () =>
     dir: Math.floor(Math.random() * 4) + 1
   }))
 
-export default function Home({
-  profile, caregiverName, sessions, addSession, selectedEmotion,
-  pendingRoutine, onPendingRoutineDone,
-  onGoToRoutines, onGoToEmotions, onGoToProgress,
-  onGoToRewards, onGoToSchedule, onGoToSOS, onLogout, onReset
-}) {
+export default function Home(props) {
+  const {
+    profile, caregiverName, sessions, addSession, selectedEmotion,
+    pendingRoutine, onPendingRoutineDone,
+    onGoToRoutines, onGoToEmotions, onGoToProgress,
+    onGoToRewards, onGoToSchedule, onGoToSOS, onGoToInsights,
+    onGoToTherapist, isTherapist, onGoToStory,
+    onLogout, onReset,
+    onGoToGame, onGoToComm, onGoToCheckIn,
+    onGoToSocial, onGoToEnergy, onGoToSand, onGoToMemory,
+    onGoToBuddy, onGoToMixer, onGoToChoice, onGoToSequence, onGoToLive
+  } = props;
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [audioUrl, setAudioUrl] = useState(null)
@@ -124,6 +133,21 @@ export default function Home({
   const [showVoiceInput, setShowVoiceInput] = useState(false)
   const [voiceText, setVoiceText] = useState('')
   const [isDark, setIsDark] = useState(true)
+  const [isAutoDetectEnabled, setIsAutoDetectEnabled] = useState(false)
+  const [detectionThreshold, setDetectionThreshold] = useState(50)
+  const [deferredPrompt, setDeferredPrompt] = useState(null)
+  const [timer, setTimer] = useState(0)
+
+  // Sensory Animation Effect: "Breathing" Background
+  useEffect(() => {
+    if (isPlaying) {
+      setTimer(30) // 30s visual cue
+      const t = setInterval(() => setTimer(prev => Math.max(0, prev - 1)), 1000)
+      return () => clearInterval(t)
+    } else {
+      setTimer(0)
+    }
+  }, [isPlaying])
 
   const customRoutines = JSON.parse(localStorage.getItem('customRoutines')) || []
   const allRoutines = [...DEFAULT_ROUTINES, ...customRoutines]
@@ -134,11 +158,28 @@ export default function Home({
   const cardBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(99,179,237,0.3)'
 
   useEffect(() => {
-    if (pendingRoutine) {
-      handleRoutine(pendingRoutine)
-      onPendingRoutineDone()
+    const handler = (e) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
     }
-  }, [pendingRoutine])
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleInstallClick = async () => {
+    console.log('Install button clicked, deferredPrompt:', !!deferredPrompt)
+    if (!deferredPrompt) return
+    try {
+      deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+      console.log('Install outcome:', outcome)
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null)
+      }
+    } catch (err) {
+      console.error('Install prompt error:', err)
+    }
+  }
 
   const toggleMusic = () => {
     if (!bgMusic) {
@@ -171,7 +212,7 @@ export default function Home({
   const triggerFireworks = () => {
     setFireworkParticles(generateParticles())
     setShowFireworks(true)
-    setTimeout(() => setShowFireworks(false), 3000)
+    setTimeout(() => setShowFireworks(3000))
   }
 
   const handleRoutine = async (routine) => {
@@ -208,7 +249,9 @@ export default function Home({
       })
 
       const { data: speakData } = await axios.post('http://localhost:5000/api/speak', {
-        text: genData.script
+        text: genData.script,
+        voiceId: profile.voiceId,
+        style: profile.voiceStyle
       })
 
       setAudioUrl(speakData.audioUrl)
@@ -226,6 +269,10 @@ export default function Home({
     }
   }
 
+  const handleAutoTrigger = () => {
+    handleRoutine({ label: 'calm down, everything is okay', emoji: '💙' })
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -238,6 +285,15 @@ export default function Home({
       <Bubbles isDark={isDark} />
       <OrbitBalls />
       {showFireworks && <Fireworks particles={fireworkParticles} />}
+
+      {isPlaying && (
+        <div style={{
+          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: '90vw', height: '90vw', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(159,122,234,0.15), transparent 70%)',
+          zIndex: 0, animation: 'breathing 6s ease-in-out infinite'
+        }} />
+      )}
 
       <div style={{ maxWidth: 500, margin: '0 auto', position: 'relative', zIndex: 1 }}>
 
@@ -270,13 +326,14 @@ export default function Home({
             background: 'linear-gradient(90deg, #63b3ed, #9f7aea)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent', marginBottom: 4
-          }}>Hi, {profile.childName}! 👋</h1>
-          <p style={{ color: mutedColor, fontSize: 14 }}>
-            What are we doing now?
-          </p>
-          <p style={{ color: mutedColor, fontSize: 12, marginTop: 4 }}>
-            Caregiver: {caregiverName} 👤
-          </p>
+          }}>{loading ? 'Thinking...' : `Hey ${profile?.childName}, how are you today?`}</h1>
+          {isTherapist && (
+            <span style={{
+              background: 'rgba(159,122,234,0.2)', color: '#b794f4',
+              padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+              border: '1px solid rgba(159,122,234,0.3)'
+            }}>THERAPIST MODE</span>
+          )}
           {selectedEmotion && (
             <div style={{
               display: 'inline-block', marginTop: 8,
@@ -290,56 +347,139 @@ export default function Home({
           )}
         </div>
 
-        {/* Row 1 buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
-          <button onClick={onGoToEmotions} style={{
-            background: 'rgba(246,173,85,0.1)',
-            border: '1px solid rgba(246,173,85,0.3)',
-            color: '#f6ad55', padding: '10px 8px',
-            borderRadius: 12, cursor: 'pointer',
-            fontSize: 12, fontWeight: 600
-          }}>😊 Emotions</button>
-          <button onClick={onGoToRoutines} style={{
-            background: 'rgba(159,122,234,0.1)',
-            border: '1px solid rgba(159,122,234,0.3)',
-            color: '#9f7aea', padding: '10px 8px',
-            borderRadius: 12, cursor: 'pointer',
-            fontSize: 12, fontWeight: 600
-          }}>⚙️ Routines</button>
-          <button onClick={onGoToProgress} style={{
-            background: 'rgba(104,211,145,0.1)',
-            border: '1px solid rgba(104,211,145,0.3)',
-            color: '#68d391', padding: '10px 8px',
-            borderRadius: 12, cursor: 'pointer',
-            fontSize: 12, fontWeight: 600
-          }}>📊 Progress</button>
+        {/* SECTION 1: EMOTIONAL SUPPORT */}
+        <div style={{ marginBottom: '2rem' }}>
+          <p style={{ color: mutedColor, fontSize: 11, fontWeight: 800, marginBottom: 12, letterSpacing: 2 }}>EMOTIONAL SUPPORT 💙</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <button onClick={onGoToEmotions} style={{
+              background: 'rgba(246,173,85,0.1)', border: '1px solid rgba(246,173,85,0.3)',
+              color: '#f6ad55', padding: '15px', borderRadius: 16, cursor: 'pointer', fontWeight: 700
+            }}>😊 Emotions</button>
+            <button onClick={onGoToCheckIn} style={{
+              background: 'rgba(104,211,145,0.1)', border: '1px solid rgba(104,211,145,0.3)',
+              color: '#68d391', padding: '15px', borderRadius: 16, cursor: 'pointer', fontWeight: 700
+            }}>🧬 Body Check-In</button>
+          </div>
+          <button onClick={onGoToStory} style={{
+            width: '100%', mt: 10, padding: '18px', borderRadius: 20, marginTop: 10,
+            background: 'linear-gradient(90deg, #9f7aea, #63b3ed)', border: 'none', color: 'white', fontWeight: 800,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, cursor: 'pointer'
+          }}>📖 AI Story Companion</button>
         </div>
 
-        {/* Row 2 buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: '1.5rem' }}>
-          <button onClick={onGoToRewards} style={{
-            background: 'rgba(246,173,85,0.1)',
-            border: '1px solid rgba(246,173,85,0.3)',
-            color: '#f6ad55', padding: '10px 8px',
-            borderRadius: 12, cursor: 'pointer',
-            fontSize: 12, fontWeight: 600
-          }}>⭐ Rewards</button>
-          <button onClick={onGoToSchedule} style={{
-            background: 'rgba(99,179,237,0.1)',
-            border: '1px solid rgba(99,179,237,0.3)',
-            color: '#63b3ed', padding: '10px 8px',
-            borderRadius: 12, cursor: 'pointer',
-            fontSize: 12, fontWeight: 600
-          }}>📅 Schedule</button>
-          <button onClick={onGoToSOS} style={{
-            background: 'rgba(252,129,129,0.1)',
-            border: '1px solid rgba(252,129,129,0.3)',
-            color: '#fc8181', padding: '10px 8px',
-            borderRadius: 12, cursor: 'pointer',
-            fontSize: 12, fontWeight: 600,
-            animation: 'sosPulse 2s infinite'
-          }}>🚨 SOS</button>
+        <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.05)', margin: '2rem 1.5rem' }} />
+
+        {/* SECTION 2: DAILY ESSENTIALS */}
+        <div style={{ marginBottom: '2rem' }}>
+          <p style={{ color: mutedColor, fontSize: 11, fontWeight: 800, marginBottom: 12, letterSpacing: 2 }}>DAILY ESSENTIALS ✨</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            <button onClick={onGoToRoutines} style={{
+              background: cardBg, border: `1px solid ${cardBorder}`, color: '#9f7aea',
+              padding: '12px 5px', borderRadius: 14, cursor: 'pointer', fontSize: 11, fontWeight: 700
+            }}>📂 Routines</button>
+            <button onClick={onGoToSchedule} style={{
+              background: cardBg, border: `1px solid ${cardBorder}`, color: '#63b3ed',
+              padding: '12px 5px', borderRadius: 14, cursor: 'pointer', fontSize: 11, fontWeight: 700
+            }}>📅 Schedule</button>
+            <button onClick={onGoToRewards} style={{
+              background: cardBg, border: `1px solid ${cardBorder}`, color: '#f6ad55',
+              padding: '12px 5px', borderRadius: 14, cursor: 'pointer', fontSize: 11, fontWeight: 700
+            }}>⭐ Rewards</button>
+          </div>
         </div>
+
+        {/* SECTION 3: PREPARATION & PLAY */}
+        <div style={{ 
+          marginBottom: '2rem', padding: '1.5rem', borderRadius: 24,
+          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(159,122,234,0.1)'
+        }}>
+          <p style={{ color: '#9f7aea', fontSize: 11, fontWeight: 900, marginBottom: 15, textAlign: 'center', letterSpacing: 2 }}>PREPARATION & PLAY 🌈</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <button onClick={onGoToSocial} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(159,122,234,0.1)',
+              border: '1px solid rgba(159,122,234,0.2)', color: '#9f7aea', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>📖 Social Story</button>
+            <button onClick={onGoToEnergy} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(237,137,54,0.1)',
+              border: '1px solid rgba(237,137,54,0.2)', color: '#ed8936', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>🔋 Energy Meter</button>
+            <button onClick={onGoToSand} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(56,161,105,0.1)',
+              border: '1px solid rgba(56,161,105,0.2)', color: '#38a169', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>🎨 Sand Art</button>
+            <button onClick={onGoToMemory} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(49,130,206,0.1)',
+              border: '1px solid rgba(49,130,206,0.2)', color: '#3182ce', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>🧠 Memory Match</button>
+            <button onClick={onGoToGame} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(159,122,234,0.1)',
+              border: '1px solid rgba(159,122,234,0.2)', color: '#9f7aea', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>🧼 Zen Play</button>
+            <button onClick={onGoToComm} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(99,179,237,0.1)',
+              border: '1px solid rgba(99,179,237,0.2)', color: '#63b3ed', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>🗣️ AAC Board</button>
+          </div>
+        </div>
+
+        {/* SECTION 4: MASTERY & SUPPORT 🌟 */}
+        <div style={{ 
+          marginBottom: '2rem', padding: '1.5rem', borderRadius: 24,
+          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(72,187,120,0.1)'
+        }}>
+          <p style={{ color: '#48bb78', fontSize: 11, fontWeight: 900, marginBottom: 15, textAlign: 'center', letterSpacing: 2 }}>MASTERY & SUPPORT 🌟</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <button onClick={onGoToBuddy} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(237,137,54,0.1)',
+              border: '1px solid rgba(237,137,54,0.2)', color: '#ed8936', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>🤖 AI Buddy</button>
+            <button onClick={onGoToMixer} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(66,153,225,0.1)',
+              border: '1px solid rgba(66,153,225,0.2)', color: '#4299e1', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>🎛️ Sensory Mixer</button>
+            <button onClick={onGoToChoice} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(159,122,234,0.1)',
+              border: '1px solid rgba(159,122,234,0.2)', color: '#9f7aea', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>🍱 Choice Board</button>
+            <button onClick={onGoToSequence} style={{
+              padding: '12px', borderRadius: 16, background: 'rgba(56,161,105,0.1)',
+              border: '1px solid rgba(56,161,105,0.2)', color: '#38a169', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+            }}>👟 How-To</button>
+            <button onClick={onGoToLive} style={{
+              gridColumn: 'span 2',
+              padding: '14px', borderRadius: 18, background: 'rgba(237,100,166,0.1)',
+              border: '1px solid rgba(237,100,166,0.3)', color: '#ed64a6', fontWeight: 800, fontSize: 13, cursor: 'pointer'
+            }}>👨‍👩‍👧‍👦 Live Support Connect</button>
+          </div>
+        </div>
+
+        <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.05)', margin: '2rem 0' }} />
+
+        {/* SECTION 4: SMART INSIGHTS */}
+        {sessions.length > 0 && (
+          <div style={{ marginBottom: '2rem' }}>
+            <p onClick={onGoToInsights} style={{ 
+              color: '#68d391', fontSize: 11, fontWeight: 800, marginBottom: 12, 
+              textAlign: 'center', letterSpacing: 2, cursor: 'pointer' 
+            }}>AI SMART SUGGESTIONS 🧠</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {getSmartSuggestions(sessions, allRoutines).map(sug => (
+                <button
+                  key={sug.label}
+                  onClick={() => handleRoutine(sug)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px',
+                    background: 'rgba(104,211,145,0.05)', border: '1.5px solid rgba(104,211,145,0.3)',
+                    borderRadius: 14, cursor: 'pointer', color: '#68d391', fontSize: 11, fontWeight: 700
+                  }}
+                >
+                  <span style={{ fontSize: 18 }}>{sug.emoji}</span>
+                  <span>{sug.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Language selector */}
         <div style={{ marginBottom: '1.5rem' }}>
@@ -479,6 +619,72 @@ export default function Home({
           </div>
         )}
 
+        {/* Auto Voice Detection Controls */}
+        <div style={{
+          background: cardBg,
+          border: `1px solid ${cardBorder}`,
+          borderRadius: 16, padding: '1rem',
+          marginBottom: '1rem',
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 20 }}>🤖</span>
+              <span style={{ color: textColor, fontWeight: 600, fontSize: 14 }}>
+                Auto Voice Detection
+              </span>
+            </div>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={isAutoDetectEnabled}
+                onChange={() => setIsAutoDetectEnabled(!isAutoDetectEnabled)}
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+
+          {isAutoDetectEnabled && (
+            <>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: mutedColor, marginBottom: 4 }}>
+                  <span>Sensitivity (Threshold)</span>
+                  <span>{60 - Math.floor(detectionThreshold/2)}% sensitive</span>
+                </div>
+                <input
+                  type="range"
+                  min="20"
+                  max="100"
+                  value={detectionThreshold}
+                  onChange={(e) => setDetectionThreshold(parseInt(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer' }}
+                />
+              </div>
+              <VoiceDetector
+                isEnabled={isAutoDetectEnabled}
+                threshold={detectionThreshold}
+                onTrigger={handleAutoTrigger}
+                isDark={isDark}
+              />
+            </>
+          )}
+        </div>
+
+        {/* PWA Install Button */}
+        {deferredPrompt && (
+          <button onClick={handleInstallClick} style={{
+            width: '100%', padding: '12px',
+            borderRadius: 12, marginBottom: '1.5rem',
+            background: 'linear-gradient(90deg, #63b3ed, #4299e1)',
+            border: 'none', color: 'white',
+            fontWeight: 700, cursor: 'pointer',
+            fontSize: 13, animation: 'fadeIn 0.5s ease',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
+          }}>
+            <span>📱</span> Install Voice Anchor App
+          </button>
+        )}
+
         {/* Routine buttons */}
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr',
@@ -586,35 +792,71 @@ export default function Home({
             I need to calm down
           </span>
         </button>
+        
+        {deferredPrompt && (
+          <div style={{ marginTop: '1.5rem', animation: 'fadeIn 0.5s ease' }}>
+            <button
+              onClick={handleInstallClick}
+              style={{
+                width: '100%', padding: '14px', borderRadius: 16,
+                background: 'rgba(99,179,237,0.15)', border: '2px solid #63b3ed',
+                color: '#63b3ed', fontWeight: 800, fontSize: 14, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
+              }}
+            >
+              <span>📲</span>
+              <span>Install Voice Anchor App</span>
+            </button>
+            <p style={{ 
+              fontSize: 11, color: mutedColor, textAlign: 'center', 
+              marginTop: 8, opacity: 0.8 
+            }}>Install for offline access & faster loading</p>
+          </div>
+        )}
 
-        {/* Bottom */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between',
-          alignItems: 'center', marginTop: 20
-        }}>
-          <button onClick={onReset} style={{
-            background: 'none', border: 'none',
-            color: mutedColor, fontSize: 12, cursor: 'pointer'
-          }}>Change profile</button>
-
-          <button onClick={() => setIsDark(!isDark)} style={{
-            background: isDark ? 'rgba(246,173,85,0.1)' : 'rgba(99,179,237,0.1)',
-            border: isDark ? '1px solid rgba(246,173,85,0.3)' : '1px solid rgba(99,179,237,0.3)',
-            color: isDark ? '#f6ad55' : '#63b3ed',
-            fontSize: 12, padding: '6px 14px',
-            borderRadius: 8, cursor: 'pointer'
-          }}>
-            {isDark ? '☀️ Light' : '🌙 Dark'}
-          </button>
-
-          <button onClick={onLogout} style={{
-            background: 'rgba(252,129,129,0.1)',
-            border: '1px solid rgba(252,129,129,0.3)',
-            color: '#fc8181', fontSize: 12,
-            padding: '6px 14px', borderRadius: 8, cursor: 'pointer'
-          }}>🚪 Logout</button>
+        {/* Logout/Reset */}
+        <div style={{ textAlign: 'center', marginTop: '1rem', paddingBottom: '2rem' }}>
+          {isTherapist ? (
+            <button
+              onClick={() => onReset && onReset()}
+              style={{
+                background: 'none', border: 'none', color: '#63b3ed',
+                fontSize: 14, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline'
+              }}
+            >
+              ← Back to Therapist Dashboard
+            </button>
+          ) : (
+            <>
+              <button 
+                onClick={onGoToInsights} 
+                style={{
+                  background: 'none', border: 'none', color: '#9f7aea',
+                  fontSize: 13, cursor: 'pointer', fontWeight: 600,
+                  textDecoration: 'underline', display: 'block', margin: '0 auto 1rem'
+                }}
+              >
+                View AI Caregiver Insights 🛡️
+              </button>
+              
+              <button
+                onClick={() => onReset && onReset()}
+                style={{
+                  background: 'none', border: 'none', color: '#fc8181',
+                  fontSize: 14, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline',
+                  display: 'block', margin: '0 auto'
+                }}
+              >
+                Reset Child Profile (Danger)
+              </button>
+            </>
+          )}
         </div>
 
+        {/* Therapist Notes Section */}
+        {isTherapist && profile && (
+          <TherapistNotes childId={profile.id} isDark={isDark} />
+        )}
       </div>
 
       <style>{`
@@ -674,6 +916,62 @@ export default function Home({
         @keyframes sosPulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(252,129,129,0.3); }
           50% { box-shadow: 0 0 10px 3px rgba(252,129,129,0.1); }
+        }
+        
+        /* Toggle Switch */
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 44px;
+          height: 24px;
+        }
+        .switch input { 
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+          border-radius: 34px;
+        }
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 18px;
+          width: 18px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%;
+        }
+        input:checked + .slider {
+          background-color: #63b3ed;
+        }
+        input:focus + .slider {
+          box-shadow: 0 0 1px #63b3ed;
+        }
+        input:checked + .slider:before {
+          transform: translateX(20px);
+        }
+        @keyframes breathing {
+          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.15; }
+          50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.25; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.1); opacity: 1; }
         }
       `}</style>
     </div>
