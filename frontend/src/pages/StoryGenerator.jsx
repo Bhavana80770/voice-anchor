@@ -10,7 +10,7 @@ export default function StoryGenerator({ profile, onBack, language, isDark }) {
     setLoading(true)
     setAudioUrl('')
     try {
-      const genRes = await axios.post('http://localhost:5000/api/generate', {
+      const genRes = await axios.post('https://voice-anchor.onrender.com/api/generate', {
         childName: profile.childName,
         favoriteThing: profile.favoriteThing,
         language: language,
@@ -20,7 +20,7 @@ export default function StoryGenerator({ profile, onBack, language, isDark }) {
       const storyText = genRes.data.script
       setStory(storyText)
  
-      const speakRes = await axios.post('http://localhost:5000/api/speak', {
+      const speakRes = await axios.post('https://voice-anchor.onrender.com/api/speak', {
         text: storyText,
         voiceId: profile.voiceId,
         style: profile.voiceStyle

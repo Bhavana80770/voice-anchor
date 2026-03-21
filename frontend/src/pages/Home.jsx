@@ -228,7 +228,7 @@ export default function Home(props) {
       : ''
 
     try {
-      const { data: genData } = await axios.post('http://localhost:5000/api/generate', {
+      const { data: genData } = await axios.post('https://voice-anchor.onrender.com/api/generate', {
         childName: profile.childName,
         age: profile.age,
         favoriteThing: profile.favoriteThing,
@@ -248,7 +248,7 @@ export default function Home(props) {
         emotion: selectedEmotion?.label || 'neutral'
       })
 
-      const { data: speakData } = await axios.post('http://localhost:5000/api/speak', {
+      const { data: speakData } = await axios.post('https://voice-anchor.onrender.com/api/speak', {
         text: genData.script,
         voiceId: profile.voiceId,
         style: profile.voiceStyle

@@ -11,7 +11,7 @@ export default function SocialStory({ onBack, profile, isDark, language }) {
     if (!situation.trim()) return
     setLoading(true)
     try {
-      const { data } = await axios.post('http://localhost:5000/api/generate', {
+      const { data } = await axios.post('https://voice-anchor.onrender.com/api/generate', {
         childName: profile.childName,
         age: profile.age,
         situation,
@@ -34,7 +34,7 @@ export default function SocialStory({ onBack, profile, isDark, language }) {
   const handleSpeak = async (text) => {
     setIsPlaying(true)
     try {
-      const { data } = await axios.post('http://localhost:5000/api/speak', {
+      const { data } = await axios.post('https://voice-anchor.onrender.com/api/speak', {
         text,
         voiceId: profile.voiceId || 'en-US-natalie',
         style: profile.voiceStyle || 'Calm'

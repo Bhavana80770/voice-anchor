@@ -17,7 +17,7 @@ export default function SensoryCheckIn({ onBack, profile, isDark }) {
 
   const handleSpeak = async (text) => {
     try {
-      const { data } = await axios.post('http://localhost:5000/api/speak', {
+      const { data } = await axios.post('https://voice-anchor.onrender.com/api/speak', {
         text,
         voiceId: profile.voiceId || 'en-US-natalie',
         style: profile.voiceStyle || 'Calm'

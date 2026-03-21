@@ -32,7 +32,7 @@ export default function AnchorBuddy({ onBack, profile, language }) {
         content: m.content
       }))
 
-      const res = await axios.post('http://localhost:5000/api/generate', {
+      const res = await axios.post('https://voice-anchor.onrender.com/api/generate', {
         isBuddy: true,
         userMessage: input,
         history,
